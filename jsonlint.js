@@ -335,7 +335,7 @@ function configure() {
 
         /* loop through the rules looking for a match */
         for (rule in rules) {
-            if (rules.hasOwnProperty(rule) && (name === rules[rule].opt_long || name === rules[rule].opt_short)) {
+            if (rules.hasOwnProperty(rule) && (name === rules[rule].opt_long || name === rules[rule].opt_short || name === rule)) {
                 is = true;
                 break;
             }
@@ -405,7 +405,7 @@ function configure() {
         for (rule in rules) {
             if (rules.hasOwnProperty(rule)) {
                 /* if the command-line parameter is the rule 'name', enable or disable the rule */
-                if (name === rules[rule].opt_long || name === rules[rule].opt_short) {
+                if (name === rules[rule].opt_long || name === rules[rule].opt_short || name === rule) {
                     /* set the rule state */
                     if (config.state !== null && config.state !== undefined) {
                         rules[rule].enabled = config.state;
