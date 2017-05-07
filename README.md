@@ -8,7 +8,7 @@ Rules may also be enabled or disabled from a configuraton file, named .jsonlintr
 #### .jsonlintrc
 ```json
 {
-  "rules": 
+  "rules": {
     "comma-dangle": "on",
     "eol-last": "off",
     "indent": "2",
