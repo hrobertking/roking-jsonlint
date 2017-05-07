@@ -1,7 +1,7 @@
 # roking-jsonlint
 
 ## rules
-Rules are enabled or disabled from the command line. Any rule can be disabled by setting the value to `false`, e.g., `--tabs=false`.
+Rules are enabled or disabled from the command line. Any rule can be enabled by setting the value to 'true' or 'on', or disabled by setting the value to 'false' or 'off', e.g., `--tabs=false` or `--comma=on`. The short option, e.g., `-c`, the long option, e.g., `--comma`, or the rule name, e.g., `--comma-dangle`, can be used to enable or disable a rule.
 
 Rules may also be enabled or disabled from a configuraton file, named .jsonlintrc, using the same values as used on the command line. A sample config is available in this repo and is shown below.
 
