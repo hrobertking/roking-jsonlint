@@ -3,6 +3,23 @@
 ## rules
 Rules are enabled or disabled from the command line. Any rule can be disabled by setting the value to `false`, e.g., `--tabs=false`.
 
+Rules may also be enabled or disabled from a configuraton file, named .jsonlintrc, using the same values as used on the command line. A sample config is available in this repo and is shown below.
+
+#### .jsonlintrc
+```json
+{
+  "rules": 
+    "comma-dangle": "on",
+    "eol-last": "off",
+    "indent": "2",
+    "mixed-whitespace": "on",
+    "spacing": "on",
+    "tabs": "off",
+    "whitespace": "on"
+  }
+}
+```
+
 #### comma-dangle :: enabled
 When true, allows a dangling comma. Default is false (dangling commas are not allowed).
 * --comma
