@@ -369,6 +369,18 @@ function configure() {
                 if (passed.length > 1) {
                     config.value = JSON.parse(passed[1]);
                 }
+            } else if (passed[0] === 'off') {
+                config.state = false;
+
+                if (passed.length > 1) {
+                    config.value = JSON.parse(passed[1]);
+                }
+            } else if (passed[0] === 'on') {
+                config.state = true;
+
+                if (passed.length > 1) {
+                    config.value = JSON.parse(passed[1]);
+                }
             } else if (passed[0] === '') {
                 config.state = false;
             } else {
