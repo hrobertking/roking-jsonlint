@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "comma-dangle": "on",
+    "eol-last": "off",
+    "indent": "2",
+    "mixed-whitespace": "on",
+    "spacing": "on",
+    "tabs": "off",
+    "whitespace": "on"
+  }
+}
