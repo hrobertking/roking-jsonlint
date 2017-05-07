@@ -369,18 +369,18 @@ function configure() {
                 if (passed.length > 1) {
                     config.value = JSON.parse(passed[1]);
                 }
-            } else if (passed[0] === 'off') {
-                config.state = false;
+			} else if (passed[0] === 'off') {
+				config.state = false;
 
-                if (passed.length > 1) {
-                    config.value = JSON.parse(passed[1]);
-                }
-            } else if (passed[0] === 'on') {
-                config.state = true;
+				if (passed.length > 1) {
+					config.value = JSON.parse(passed[1]);
+				}
+			} else if (passed[0] === 'on') {
+				config.state = true;
 
-                if (passed.length > 1) {
-                    config.value = JSON.parse(passed[1]);
-                }
+				if (passed.length > 1) {
+					config.value = JSON.parse(passed[1]);
+				}
             } else if (passed[0] === '') {
                 config.state = false;
             } else {
@@ -433,130 +433,6 @@ function configure() {
 }
 
 /**
- * Loads the list of files to evaluate
- * @return {void}
- */
-function getFileList() {
-    var fs = require('fs'),
-        ndx,
-        expanded = [ ];
-
-    function dir(directory, filelist) {
-        var list = fs.readdirSync(directory);
-
-        /* make sure null values are an array */
-        filelist = filelist || [ ];
-
-        /* loop through directory entries */
-        list.forEach(function(file) {
-            var abs = path.join(directory, file);
-
-            if (fs.existsSync(abs) && fs.statSync(abs).isDirectory()) {
-                filelist = dir(path.join(directory, file), filelist);
-            } else {
-                filelist.push(path.join(directory, file));
-            }
-        });
-
-        return filelist;
-    }
-
-    /* get the files from the command line */
-    files = [ ].concat((cli.f || '').split(/\s+|\,\s*/),
-            (cli.files || '').split(/\s+|\,\s*/),
-            (cli._unnamed || '').split(/\s+|\,\s*/)
-            );
-
-    /* remove empty names */
-    ndx = files.length - 1;
-    while (ndx > -1) {
-        if (!files[ndx].replace(/^\s*|\s*$/g, '')) {
-            files.splice(ndx, 1);
-        } else if (fs.existsSync(files[ndx]) && fs.statSync(files[ndx]).isDirectory()) {
-            /* expand any directories */
-            dir(files.splice(ndx, 1)[0], expanded);
-        }
-        ndx -= 1;
-    }
-
-    /* add any expanded directories to the file list */
-    files = files.concat(expanded);
-}
-
-/**
- * Process a single file
- * @return {void}
- * @param {string} filename
- * @param {function} callback
- * @param {boolean} isfirst
- */
-function lint(filename, callback, isfirst) {
-    var fs = require('fs'),
-        data;
-
-    if (fs.existsSync(filename)) {
-        fs.readFile(filename, function(err, data) {
-            var rule;
-
-            /* reset the evaluation object */
-            evaluation.reset(filename);
-
-            /* initialize the lines array that we'll be processing */
-            lines = [ ];
-
-            if (err) {
-                console.log('');
-                console.error(err);
-                console.log('');
-            } else if (data) {
-                /* split the file into lines */
-                lines = data.toString().split('\n');
-
-                /* parse the JSON to make sure it is valid */
-                jsonparse();
-
-                /* run all the individual rules */
-                for (rule in rules) {
-                    if (rules.hasOwnProperty(rule) && rules[rule].enabled) {
-                        rules[rule].handler.call(rules[rule]);
-                    }
-                }
-
-                /* execute the callback if it's provided */
-                if (callback && callback.call) {
-                    callback.call();
-                }
-
-                /* report the results unless 'quiet' has been specified */
-                if (!cli.q && !cli.quiet) {
-                    evaluation.show(filename);
-                }
-            }
-        });
-    } else {
-        console.error('File "' + filename + '" does not exist.');
-    }
-}
-
-/**
- * Process the file(s) to be linted
- * @return {void}
- * @param {function} callback
- */
-function lintList(callback) {
-    var ndx;
-
-    /* lint all the files in the list */
-    if (files.length) {
-        for (ndx = 0; ndx < files.length; ndx += 1) {
-            lint(files[ndx], callback, ndx === 0);
-        }
-    } else {
-        console.warn('File list is empty');
-    }
-}
-
-/**
  * Pads a string with spaces to a minimum length
  * @return {string}
  * @param {string} value
@@ -574,10 +450,10 @@ function fill(value, length, str) {
 /**
  * Parses the array of arguments passed and returns an object
  * @returns {object}
- * @param {string[]} args
  */
-function opts(args) {
-    var isfirst = true,
+function getCLIOpts() {
+    var args = process.argv,
+        isfirst = true,
         arg_l,
         arg_s,
         value,
@@ -687,6 +563,82 @@ function opts(args) {
 }
 
 /**
+ * Parses the config file and returns an object
+ * @returns {object}
+ */
+function getConfig() {
+    var fs = require('fs'),
+        fconfig = '.jsonlintrc',
+        rules,
+        prop,
+        obj = {
+            rules: { 
+            }
+        };
+
+    try {
+        if (fs.existsSync(fconfig)) {
+            obj = JSON.parse(fs.readFileSync(fconfig).toString());
+        }
+    } catch (ignore) {
+        /* ignore the error */
+    }
+
+    return obj.rules;
+}
+
+/**
+ * Loads the list of files to evaluate
+ * @return {void}
+ */
+function getFileList() {
+    var fs = require('fs'),
+        ndx,
+        expanded = [ ];
+
+    function dir(directory, filelist) {
+        var list = fs.readdirSync(directory);
+
+        /* make sure null values are an array */
+        filelist = filelist || [ ];
+
+        /* loop through directory entries */
+        list.forEach(function(file) {
+            var abs = path.join(directory, file);
+
+            if (fs.existsSync(abs) && fs.statSync(abs).isDirectory()) {
+                filelist = dir(path.join(directory, file), filelist);
+            } else {
+                filelist.push(path.join(directory, file));
+            }
+        });
+
+        return filelist;
+    }
+
+    /* get the files from the command line */
+    files = [ ].concat((cli.f || '').split(/\s+|\,\s*/),
+            (cli.files || '').split(/\s+|\,\s*/),
+            (cli._unnamed || '').split(/\s+|\,\s*/)
+            );
+
+    /* remove empty names */
+    ndx = files.length - 1;
+    while (ndx > -1) {
+        if (!files[ndx].replace(/^\s*|\s*$/g, '')) {
+            files.splice(ndx, 1);
+        } else if (fs.existsSync(files[ndx]) && fs.statSync(files[ndx]).isDirectory()) {
+            /* expand any directories */
+            dir(files.splice(ndx, 1)[0], expanded);
+        }
+        ndx -= 1;
+    }
+
+    /* add any expanded directories to the file list */
+    files = files.concat(expanded);
+}
+
+/**
  * Parses the file, simulating JSON.parse but with better error messages
  * @returns {object}
  */
@@ -773,6 +725,130 @@ function jsonparse() {
 }
 
 /**
+ * Process a single file
+ * @return {void}
+ * @param {string} filename
+ * @param {function} callback
+ * @param {boolean} isfirst
+ */
+function lint(filename, callback, isfirst) {
+    var fs = require('fs');
+
+    if (fs.existsSync(filename)) {
+        fs.readFile(filename, function(err, data) {
+            var rule;
+
+            /* reset the evaluation object */
+            evaluation.reset(filename);
+
+            /* initialize the lines array that we'll be processing */
+            lines = [ ];
+
+            if (err) {
+                console.log('');
+                console.error(err);
+                console.log('');
+            } else if (data) {
+                /* split the file into lines */
+                lines = data.toString().split('\n');
+
+                /* parse the JSON to make sure it is valid */
+                jsonparse();
+
+                /* run all the individual rules */
+                for (rule in rules) {
+                    if (rules.hasOwnProperty(rule) && rules[rule].enabled) {
+                        rules[rule].handler.call(rules[rule]);
+                    }
+                }
+
+                /* execute the callback if it's provided */
+                if (callback && callback.call) {
+                    callback.call();
+                }
+
+                /* report the results unless 'quiet' has been specified */
+                if (!cli.q && !cli.quiet) {
+                    evaluation.show(filename);
+                }
+            }
+        });
+    } else {
+        console.error('File "' + filename + '" does not exist.');
+    }
+}
+
+/**
+ * Process the file(s) to be linted
+ * @return {void}
+ * @param {function} callback
+ */
+function lintList(callback) {
+    var ndx;
+
+    /* lint all the files in the list */
+    if (files.length) {
+        for (ndx = 0; ndx < files.length; ndx += 1) {
+            lint(files[ndx], callback, ndx === 0);
+        }
+    } else {
+        console.warn('File list is empty');
+    }
+}
+
+/**
+ * Merge objects, using order provided as precedence
+ * @return {object}
+ * @param {object[]} arguments
+ */
+function merge() {
+	var args = Array.prototype.slice.call(arguments),
+		ndx,
+		obj = { },
+		prop;
+
+    /* loop through the object passed in, last to first */
+    for (ndx = 0; ndx < args.length; ndx += 1) {
+		for (prop in args[ndx]) {
+			if (args[ndx].hasOwnProperty(prop)) {
+				if (!obj.hasOwnProperty(prop)) {
+					obj[prop] = JSON.parse(JSON.stringify(args[ndx][prop]));
+				}
+			}
+		}
+	}
+
+    return obj;
+}
+
+/**
+ * Normalizes object properties to rule names
+ * @return {object}
+ * @param {object} config
+ */
+function normalizeConfig(config) {
+    var prop,
+        rule;
+
+    for (prop in config) {
+        if (config.hasOwnProperty(prop)) {
+            for (rule in rules) {
+                if (rules.hasOwnProperty(rule)) {
+                    if (prop === rules[rule].opt_long || prop === rules[rule].opt_short) {
+                        if (prop !== rule) {
+                            config[rule] = JSON.parse(JSON.stringify(config[prop]));
+                            delete config[prop];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return config;
+}
+
+/**
  * Usage information
  * @returns {void}
  */
@@ -817,7 +893,10 @@ function usage() {
     console.log('');
 }
 
-cli = opts(process.argv);
+cli = merge(
+            normalizeConfig(getCLIOpts()),
+            normalizeConfig(getConfig())
+        );
 
 if (cli.h || cli.help) {
     usage();
